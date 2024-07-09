@@ -44,6 +44,12 @@ class Teacher extends Person {
     this.gender = gender ?? this.gender;
     this.phone = phone ?? this.phone;
     this.salary = salary ?? this.salary;
+    if(salary!= null){
+      _remainedSalary = this.salary;
+      int tempPaid = _paid;
+      teacherPaid(_paid);
+      _paid -= tempPaid;
+    }
     this.subject = subject ?? this.subject;
 
   }

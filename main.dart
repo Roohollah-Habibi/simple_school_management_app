@@ -120,8 +120,14 @@ void modifyTeacherMethod(Admin admin) {
         foundTeacher.modifyTeacherProfile(subject: subject);
       case 'sl' || 'salary':
         stdout.write('New salary: ');
-        salary = int.parse(stdin.readLineSync().toString());
-        foundTeacher.modifyTeacherProfile(salary: salary);
+        String userInput = stdin.readLineSync().toString();
+        if(userInput.isNotEmpty && userInput.contains(RegExp(r'^[0-9]+$'))){
+          salary = int.parse(userInput);
+          foundTeacher.modifyTeacherProfile(salary: salary);
+        }else{
+          print('Invalid input');
+          return;
+        }
       case 'e' || 'exit':
         goForward = false;
     }
@@ -129,25 +135,58 @@ void modifyTeacherMethod(Admin admin) {
 }
 
 void payTeacherSalaryMethod(Admin admin) {
-  String? name, lastName, subject,teacherId;
+  String? name, lastName, subject, teacherId;
   int amount = 0;
-  stdout.write('Teacher name: ');
-  name = stdin.readLineSync().toString();
+  bool? foundTeacher;
+  Teacher teacher;
+  print('Select teacher by [i]d,/ [n]ame');
+  String userInput = stdin.readLineSync().toString();
+  if (userInput.isNotEmpty) {
+    switch (userInput) {
+      case 'i' || 'id':
+        stdout.write('Teacher Id: ');
+        teacherId = stdin.readLineSync().toString();
+        foundTeacher =
+            admin.teacherList.any((existTeacher) => existTeacher.id ==
+                teacherId);
+      case 'n' || 'name':
+        stdout.write('Teacher name: ');
+        name = stdin.readLineSync().toString();
 
-  stdout.write('last name: ');
-  lastName = stdin.readLineSync().toString();
+        stdout.write('last name: ');
+        lastName = stdin.readLineSync().toString();
 
-  stdout.write('field/subject: ');
-  subject = stdin.readLineSync().toString();
-
+        stdout.write('field/subject: ');
+        subject = stdin.readLineSync().toString();
+      default:
+        print('invalid input / back to the main menu\n');
+        return;
+    }
+  } else {
+    print('invalid input / back to the main menu\n');
+    return;
+  }
   stdout.write('amount to pay: ');
   String input = stdin.readLineSync().toString();
 
-  if(input.contains(RegExp(r'^[0-9]+$'))){
+  if (input.contains(RegExp(r'^[0-9]+$'))) {
     amount = int.parse(input);
-    Teacher teacher = Teacher(name: name, lastName: lastName, subject: subject);
+    if (foundTeacher != null && foundTeacher) {
+      teacher =
+          admin.teacherList.firstWhere((existTeacher) => existTeacher.id ==
+              teacherId);
+      admin.teacherPayment(teacher, amount);
+      return;
+    }
+
+    if (foundTeacher == null ) {
+      teacher = Teacher(name: name, lastName: lastName, subject: subject);
+    } else {
+      print('could not found the teacher');
+      return;
+    }
     admin.teacherPayment(teacher, amount);
-  }else{
+  } else {
     print('invalid amount❌');
   }
 }
@@ -185,7 +224,7 @@ void addTeacherMethod(Admin admin) {
       continue;
     }
     bool goForward = myTeacher.any((element) =>
-        (element.name == name) &&
+    (element.name == name) &&
         (element.lastName == lastName) &&
         (element.subject == subject));
     if (goForward) {
@@ -208,7 +247,8 @@ void addTeacherMethod(Admin admin) {
       salary = int.parse(userInput);
     } else {
       if (userInput.isEmpty) {
-        print('\t ==> default value [0.00] is automatically set for an empty salary 😉 <==');
+        print(
+            '\t ==> default value [0.00] is automatically set for an empty salary 😉 <==');
       } else {
         print('\t ==> salary option can\'t contains letters or spaces ❌ <==\n'
             '\t ==> so default salary[0.00] is set automatically <==\n');
@@ -218,8 +258,8 @@ void addTeacherMethod(Admin admin) {
         name: name,
         lastName: lastName,
         subject: subject,
-        gender: (gender.isEmpty)? 'not set': gender,
-        phone: (phone.isEmpty)? 'not set': phone,
+        gender: (gender.isEmpty) ? 'not set' : gender,
+        phone: (phone.isEmpty) ? 'not set' : phone,
         salary: salary));
   }
 }
